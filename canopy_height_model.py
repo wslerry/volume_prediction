@@ -21,10 +21,10 @@
  ***************************************************************************/
 """
 
-from qgis.core import *  # QgsRasterLayer, QgsMapLayerRegistry
-from qgis.gui import *  # QgsMapLayerComboBox, QgsMapLayerProxyModel , QgsDoubleSpinBox
 from PyQt4.QtCore import *  # QSettings, QTranslator, qVersion, QCoreApplication, QFileInfo
 from PyQt4.QtGui import *  # QAction, QIcon, QFileDialog
+from qgis.core import *  # QgsRasterLayer, QgsMapLayerRegistry
+from qgis.gui import *  # QgsMapLayerProxyModel , QgsDoubleSpinBox
 # Initialize Qt resources from file resources.py
 import resources
 # Import the code for the dialog
@@ -68,7 +68,6 @@ class CanopyHeightModel:
 
         self.dlg.pushButton.clicked.connect(self.save_chm)
         self.dlg.pushButton_2.clicked.connect(self.save_volume)
-        self.dlg.button_box.rejected.connect(self.dlg.close)
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -133,10 +132,14 @@ class CanopyHeightModel:
     def save_chm(self):
         file_name = QFileDialog.getSaveFileName(self.dlg, "Select output file ", "", 'GeoTiff (*.tif *.tiff)')
         self.dlg.lineEdit.setText(file_name)
+        if len(file_name) is 0:
+            return 0
 
     def save_volume(self):
         file_name = QFileDialog.getSaveFileName(self.dlg, "Select output file ", "", 'GeoTiff (*.tif *.tiff)')
         self.dlg.lineEdit_2.setText(file_name)
+        if len(file_name) is 0:
+            return 0
 
     def run(self):
         """Run method that performs all the real work"""
@@ -144,9 +147,6 @@ class CanopyHeightModel:
         self.dlg.mMapLayerComboBox2.clear()
         self.dlg.lineEdit.clear()
         self.dlg.lineEdit_2.clear()
-
-        # layer = QgsMapLayerComboBox()
-        # QgsMapLayerComboBox().setFilters(QgsMapLayerProxyModel.RasterLayer)
 
         # show the dialog
         self.dlg.show()
@@ -157,7 +157,11 @@ class CanopyHeightModel:
             layer = QgsMapLayerComboBox()
             layer.setFilters(QgsMapLayerProxyModel.RasterLayer)
             dsm_path = self.dlg.mMapLayerComboBox1.currentLayer().source()
+            if len(dsm_path) is 0:
+                return
             dtm_path = self.dlg.mMapLayerComboBox2.currentLayer().source()
+            if len(dtm_path) is 0:
+                return
 
             dsm_data = gdal.Open(dsm_path)
             dsm_band = dsm_data.GetRasterBand(1)
